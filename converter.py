@@ -1,6 +1,11 @@
 import json
-from pathlib import Path
 from itertools import chain
+from pathlib import Path
+
+import jinja2
+
+env = jinja2.Environment(trim_blocks=True, lstrip_blocks=True)
+env.globals.update(zip=zip)
 
 
 def key_to_code(key):
@@ -38,7 +43,7 @@ def key_to_code(key):
     return "KC_" + key
 
 
-def json2keys(layers_dict):
+def merge_left_and_right(layers_dict):
     layer_to_keys = {}
     for layer in layers_dict.keys():
         left, right = layers_dict[layer]["left"], layers_dict[layer]["right"]
@@ -47,38 +52,21 @@ def json2keys(layers_dict):
     return layer_to_keys
 
 
-def create_keymap_c(layer_to_keys):
-    INCLUDE = "#include QMK_KEYBOARD_H\n"
-    DEFINES_FORMAT = "#define {layer} {index}"
-    BODY_START = "\nconst uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {"
-    BODY_FORMAT = "    [{layer}] = LAYOUT({keycodes})"
-    BODY_EMD = "};"
-    lines = [INCLUDE]
-    defines = []
-    body_contents = []
-    index = 0
-    for layer, keys in layer_to_keys.items():
-        defines.append(DEFINES_FORMAT.format(layer=layer, index=index))
-        keycodes = [key_to_code(key) for key in keys]
-        body_contents.append(
-            BODY_FORMAT.format(layer=layer, keycodes=", ".join(keycodes))
-        )
-        index += 1
-    lines.extend(defines)
-    lines.append(BODY_START)
-    lines.append(",\n".join(body_contents))
-    lines.append(BODY_EMD)
-    return "\n".join(lines)
+def get_keycodes_list(layer_to_keys):
+    return [", ".join(map(key_to_code, keys)) for keys in layer_to_keys.values()]
 
 
-def main(json_path, dest):
-    path = Path(json_path)
-    layers_dict = json.load(path.open("r"))
-    layer_to_keys = json2keys(layers_dict)
-    keymap_text = create_keymap_c(layer_to_keys)
-    with open(dest, "w") as f:
+def main(json_path, template_path, keymap_path):
+    layers_dict = json.load(Path(json_path).open("r"))
+    layer_to_keys = merge_left_and_right(layers_dict)
+    with open(template_path, "r") as f:
+        template = env.from_string(f.read())
+    keymap_text = template.render(
+        layers=layer_to_keys.keys(), keys_list=get_keycodes_list(layer_to_keys)
+    )
+    with open(keymap_path, "w") as f:
         f.write(keymap_text)
 
 
 if __name__ == "__main__":
-    main("layers.json", "keymap.c")
+    main("layers.json", "keymap.tmpl.c", "keymap.c")
