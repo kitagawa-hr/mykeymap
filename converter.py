@@ -34,6 +34,10 @@ def key_to_code(key):
         "ENTER": "KC_ENT",
         "/": "KC_SLSH",
         "\\": "KC_BSLS",
+        "←": "KC_LEFT",
+        "↓": "KC_DOWN",
+        "↑": "KC_UP",
+        "→": "KC_RGHT",
     }
     ret = KEY2CODE.get(key.upper())
     if ret:

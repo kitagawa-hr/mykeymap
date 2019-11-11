@@ -26,6 +26,7 @@ def display(left, right):
         rows.append(ls + "    " + rs)
     return "\n".join(rows)
 
+
 if __name__ == "__main__":
     path = Path("layers.json")
     layers_dict = json.load(path.open("r"))
