@@ -9,6 +9,7 @@ verify_ssl = true
 beautifultable = "*"
 wcwidth = "*"
 jinja2 = "*"
+click = "*"
 
 [requires]
 python_version = "3.7"
