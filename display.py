@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 
+import click
 from beautifultable import BeautifulTable
 
 
@@ -27,8 +28,10 @@ def display(left, right):
     return "\n".join(rows)
 
 
-if __name__ == "__main__":
-    path = Path("layers.json")
+@click.command()
+@click.argument("dir_path")
+def cmd(dir_path):
+    path = Path(dir_path).joinpath("layers.json")
     layers_dict = json.load(path.open("r"))
     for layer in layers_dict.keys():
         left, right = layers_dict[layer]["left"], layers_dict[layer]["right"]
@@ -36,3 +39,7 @@ if __name__ == "__main__":
         print("```")
         print(display(to_table(left), to_table(right)))
         print("```")
+
+
+if __name__ == "__main__":
+    cmd()
