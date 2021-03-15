@@ -101,9 +101,7 @@ def main(json_path, template_path, output_path):
     layer_to_keys = merge_left_and_right(layers_dict)
     with open(template_path, "r") as f:
         template = env.from_string(f.read())
-    keymap_text = template.render(
-        layers=layer_to_keys.keys(), keys_list=get_keycodes_list(layer_to_keys)
-    )
+    keymap_text = template.render(layers=layer_to_keys.keys(), keys_list=get_keycodes_list(layer_to_keys))
     with open(output_path, "w") as f:
         f.write(keymap_text)
 
